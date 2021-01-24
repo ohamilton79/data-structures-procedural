@@ -31,7 +31,7 @@ def spaceAvailable(nodeIndex, newItem):
             return True
         
         #...or if there is space to the right of this node, and the new item to be added is greater than the value of this node
-        elif rightPointers[nodeIndex] == None and newItem > data[nodeIndex]:
+        elif rightPointers[nodeIndex] == None and newItem >= data[nodeIndex]:
             return True
 
     #Otherwise, there is no space available for the new node to be inserted as a child of the current node
@@ -95,10 +95,6 @@ def removeItem(itemToRemove):
     global rootPointer
     global freePointer
 
-    #If the item being removed is the root node
-    if itemToRemove == data[rootPointer]:
-        pass
-
     #1. Set current node as root node
     currentNode = rootPointer
 
@@ -114,6 +110,11 @@ def removeItem(itemToRemove):
         #c) Else, if the item to be deleted is greater than the current node, traverse the right branch
         else:
             currentNode = rightPointers[currentNode]
+
+    #If the current node is none, the item can't be deleted
+    if currentNode == None:
+        print("Item can't be removed as it doens't exist")
+        return
 
     #3. If the node to be deleted has no children...
     if leftPointers[currentNode] == None and rightPointers[currentNode] == None:
@@ -159,21 +160,27 @@ def removeItem(itemToRemove):
     #5. If the node to be deleted has 2 children, use Hibbard deletion method
     else:
         rightNode = rightPointers[currentNode]
-        #a) If right node has a right subtree...
-        if rightPointers[rightNode] != None or leftPointers[rightNode] != None:
-            #a) Find smallest leaf node in right subtree
-            smallestLeaf = rightNode
-            while leftPointers[smallestLeaf] != None:
-                smallestLeaf = leftPointers[smallestLeaf]
+        #a) If right node has a left subtree...
+        if leftPointers[rightNode] != None:
+            #a) Find smallest node in right subtree
+            smallestNode = rightNode
+            while leftPointers[smallestNode] != None:
+                smallestLeaf = leftPointers[smallestNode]
 
-            #b) Remove the smallest leaf node and update free space
-            removeItem(data[smallestLeaf])
+            #b) Remove the smallest node and update free space
+            removeItem(data[smallestNode])
 
             #c) Replace current node with smallest leaf node
-            data[currentNode] = data[smallestLeaf]
-            #oldFreePointer = freePointer
-            #freePointer = smallestLeaf
-            #rightPointers[freePointer] = oldFreePointer
+            data[currentNode] = data[smallestNode]
+
+        #If the right node exists and has no right subtree...
+        else:
+            #The right node is the successor, so swap with node to be deleted and remove original
+            removeItem(data[rightNode])
+
+            data[currentNode] = data[rightNode]
+            #Set current node's right pointer to null
+            rightPointer[currentNode] = None
 
 #Recursive subroutine to perform a pre-order traversal of the binary search tree
 def preOrderTraversal(rootPointer):
